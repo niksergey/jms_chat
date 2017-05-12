@@ -1,24 +1,24 @@
-package messaging;
+package client;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
 
 
-public class MyMessageConsumer implements Runnable {
-    private String nameThread;
+public class ClientMessageConsumer implements Runnable
+{
     private MessageConsumer messageConsumer;
+    private String host;
+
+    public ClientMessageConsumer(String host) {
+        this.host = host;
+    }
 
     private Connection createConnection() throws JMSException {
         ActiveMQConnectionFactory activeMQConnectionFactory =
-                new ActiveMQConnectionFactory("tcp://10.240.17.168:61616");
+                new ActiveMQConnectionFactory("tcp://" + host +":61616");
 
         return activeMQConnectionFactory.createConnection();
-    }
-
-    public MyMessageConsumer(String clientName) {
-        nameThread = clientName;
-        System.out.println(clientName);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class MyMessageConsumer implements Runnable {
             connection = createConnection();
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            destination = session.createQueue("Chat");
+            destination = session.createTopic("ServerOutput");
             messageConsumer = session.createConsumer(destination);
 
             while (true) {
@@ -40,7 +40,7 @@ public class MyMessageConsumer implements Runnable {
                 if ("stop".equals(msg)) {
                     break;
                 } else if ("TimeOut".equals(msg)) {
-                    System.out.printf("MQ error");
+                    System.out.printf(msg);
                     break;
                 }
 
@@ -54,7 +54,7 @@ public class MyMessageConsumer implements Runnable {
     private String receiveMessage(){
         String messageStr = null;
         try {
-            Message message = messageConsumer.receive(60000);
+            Message message = messageConsumer.receive(120_000_000);
             if (message == null) {
                 return "TimeOut";
             }

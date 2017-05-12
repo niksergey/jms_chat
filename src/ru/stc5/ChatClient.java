@@ -1,26 +1,26 @@
 package ru.stc5;
 
-import messaging.MyMessageConsumer;
-import messaging.MyMessageProvider;
+import client.ClientMessageConsumer;
+import client.ClientMessageProvider;
 
 import java.util.Date;
 import java.util.Scanner;
 
 public class ChatClient {
     public static void main(String[] args) {
-        Thread t1 = new Thread(new MyMessageConsumer("Sergey"), "t1");
+        Thread t1 = new Thread(new ClientMessageConsumer("10.240.17.168"), "ClientChat");
         t1.start();
 
-        MyMessageProvider myMessageProducer = new MyMessageProvider();
+        ClientMessageProvider provider = new ClientMessageProvider("10.240.17.168");
 
         Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.print(new Date() + ": ");
+            System.out.print("Enter message: ");
             String msg = sc.next();
             if ("Stop".equals(msg)) {
                 break;
             }
-            myMessageProducer.sendMessage(msg);
+            provider.sendMessage(msg);
         }
 
         try {
